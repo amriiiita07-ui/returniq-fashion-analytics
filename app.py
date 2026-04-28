@@ -132,7 +132,13 @@ filtered = filter_orders(orders, categories, tiers, channels, date_range)
 metrics = kpis(filtered)
 products = product_profitability(filtered)
 monthly = category_monthly(filtered)
-heatmap = size_heatmap(filtered)
+
+# FIX: Handle missing size column gracefully
+try:
+    heatmap = size_heatmap(filtered)
+except (KeyError, ValueError):
+    heatmap = pd.DataFrame()
+
 tiers_df = city_tier_summary(filtered)
 cohorts = cohort_summary(filtered)
 inventory = inventory_risk(filtered)
@@ -183,7 +189,7 @@ tabs = st.tabs(
 )
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 0: COMMAND CENTER — FIXED: fig and fig2 now defined, legends pushed down
+# TAB 0: COMMAND CENTER — FIXED: proper indentation, fig/fig2 defined first
 # ═══════════════════════════════════════════════════════════════════════════════
 with tabs[0]:
     st.markdown('<div class="section-title">Executive view</div>', unsafe_allow_html=True)
@@ -302,24 +308,30 @@ with tabs[3]:
     st.markdown('<p class="section-note">Sizing is treated as a measurable product-data problem.</p>', unsafe_allow_html=True)
     col1, col2 = st.columns([1.25, 1])
     with col1:
-        st.plotly_chart(size_heatmap_fig(heatmap, dark_mode), use_container_width=True)
+        if not heatmap.empty:
+            st.plotly_chart(size_heatmap_fig(heatmap, dark_mode), use_container_width=True)
+        else:
+            st.info("No size data available for current filter.")
     with col2:
-        size_table = (
-            filtered[filtered["size"] != "One Size"]
-            .groupby(["category", "size"], as_index=False)
-            .agg(orders=("order_id", "count"), return_rate=("returned", "mean"), profit=("return_adjusted_profit", "sum"))
-            .sort_values("return_rate", ascending=False)
-            .head(15)
-        )
-        st.dataframe(
-            size_table,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "return_rate": st.column_config.ProgressColumn("Return rate", min_value=0, max_value=1, format="%.1f"),
-                "profit": st.column_config.NumberColumn("Profit", format="₹%.0f"),
-            },
-        )
+        if "size" in filtered.columns and "category" in filtered.columns:
+            size_table = (
+                filtered[filtered["size"] != "One Size"]
+                .groupby(["category", "size"], as_index=False)
+                .agg(orders=("order_id", "count"), return_rate=("returned", "mean"), profit=("return_adjusted_profit", "sum"))
+                .sort_values("return_rate", ascending=False)
+                .head(15)
+            )
+            st.dataframe(
+                size_table,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "return_rate": st.column_config.ProgressColumn("Return rate", min_value=0, max_value=1, format="%.1f"),
+                    "profit": st.column_config.NumberColumn("Profit", format="₹%.0f"),
+                },
+            )
+        else:
+            st.info("Size data not available.")
 
 with tabs[4]:
     st.markdown('<div class="section-title">India city-tier lens</div>', unsafe_allow_html=True)
