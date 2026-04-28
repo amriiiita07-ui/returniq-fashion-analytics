@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+import plotly.graph_objects as go
 
 from src.analytics import (
     category_monthly,
@@ -180,10 +181,49 @@ tabs = st.tabs(
         "Data Lab",
     ]
 )
+    with tabs[0]:
+    st.markdown('<div class="section-title">Executive view</div>', unsafe_allow_html=True)
+    st.markdown('<p class="section-note">High-level performance after accounting for return economics.</p>', unsafe_allow_html=True)
+    col1, col2 = st.columns([1.55, 1])
 
-    with tabs[0];
+    with col1:
+        fig = monthly_profit_line(monthly, dark_mode)
+        fig.update_layout(
+            legend=dict(
+                orientation="h",
+                yanchor="top",
+                y=-0.25,
+                xanchor="center",
+                x=0.5
+            ),
+            margin=dict(t=50, b=90)
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        fig2 = category_donut(monthly, dark_mode)
+        fig2.update_layout(
+            legend=dict(
+                orientation="h",
+                yanchor="top",
+                y=-0.25,
+                xanchor="center",
+                x=0.5
+            ),
+            margin=dict(t=50, b=90)
+        )
         st.plotly_chart(fig2, use_container_width=True)
         st.dataframe(
+            monthly.sort_values("return_adjusted_profit", ascending=False),
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "gross_revenue": st.column_config.NumberColumn("Gross revenue", format="₹%.0f"),
+                "return_adjusted_profit": st.column_config.NumberColumn("Return-adjusted profit", format="₹%.0f"),
+                "return_rate": st.column_config.ProgressColumn("Return rate", min_value=0, max_value=1, format="%.1f"),
+            },
+        )
+    
 
         monthly.sort_values("return_adjusted_profit", ascending=False),
         use_container_width=True,
@@ -358,8 +398,41 @@ with tabs[7]:
     )
     channel_table["profit_per_order"] = channel_table["profit"] / channel_table["orders"]
     col1, col2 = st.columns([1.1, 1])
-    with col1:
-        st.bar_chart(channel_table.set_index("channel")[["gross_revenue", "profit"]], use_container_width=True)
+        with col1:
+        import plotly.graph_objects as go
+        fig_channel = go.Figure()
+        fig_channel.add_trace(go.Bar(
+            x=channel_table["channel"],
+            y=channel_table["gross_revenue"],
+            name="Gross Revenue",
+            marker_color="#FF6B35"
+        ))
+        fig_channel.add_trace(go.Bar(
+            x=channel_table["channel"],
+            y=channel_table["profit"],
+            name="Profit",
+            marker_color="#00D4B1"
+        ))
+        fig_channel.update_layout(
+            barmode="group",
+            template="plotly_dark" if dark_mode else "plotly_white",
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#E2E8F0" if dark_mode else "#1E293B"),
+            legend=dict(
+                orientation="h",
+                yanchor="top",
+                y=-0.25,
+                xanchor="center",
+                x=0.5
+            ),
+            margin=dict(t=30, b=80),
+            xaxis_title="",
+            yaxis_title="",
+            height=400
+        )
+        st.plotly_chart(fig_channel, use_container_width=True)
+    
     with col2:
         st.dataframe(
             channel_table,
