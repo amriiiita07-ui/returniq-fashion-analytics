@@ -233,9 +233,17 @@ def tier_scatter(tiers_df: pd.DataFrame, dark: bool) -> go.Figure:
 
 # ── 7. Inventory risk bubble ─────────────────────────────────────────────────
 
+# ── 7. Inventory risk bubble ─────────────────────────────────────────────────
+
 def inventory_risk_fig(inventory: pd.DataFrame, dark: bool) -> go.Figure:
     p = palette(dark)
     top = inventory.head(20)
+
+    if top.empty:
+        fig = go.Figure()
+        fig.update_layout(title=dict(text="Inventory risk – no data available", x=0))
+        return _themed(fig, dark)
+
     fig = go.Figure(go.Scatter(
         x=top["stockout_risk"],
         y=top["markdown_risk"],
@@ -243,11 +251,7 @@ def inventory_risk_fig(inventory: pd.DataFrame, dark: bool) -> go.Figure:
         marker=dict(
             size=top["risk_score"] * 40 + 8,
             color=top["return_rate"],
-            colorscale=[
-                [0.0, p["accent6"] + "AA"],
-                [0.5, p["accent4"]],
-                [1.0, p["accent3"]],
-            ],
+            colorscale="RdYlGn_r",   # ← built-in named scale, always safe
             opacity=0.85,
             showscale=True,
             colorbar=dict(
