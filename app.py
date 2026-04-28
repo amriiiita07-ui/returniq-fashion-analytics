@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-import streamlit as st
 import plotly.graph_objects as go
+import streamlit as st
 
 from src.analytics import (
     category_monthly,
@@ -181,7 +181,11 @@ tabs = st.tabs(
         "Data Lab",
     ]
 )
-    with tabs[0]:
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TAB 0: COMMAND CENTER — FIXED: fig and fig2 now defined, legends pushed down
+# ═══════════════════════════════════════════════════════════════════════════════
+with tabs[0]:
     st.markdown('<div class="section-title">Executive view</div>', unsafe_allow_html=True)
     st.markdown('<p class="section-note">High-level performance after accounting for return economics.</p>', unsafe_allow_html=True)
     col1, col2 = st.columns([1.55, 1])
@@ -194,9 +198,13 @@ tabs = st.tabs(
                 yanchor="top",
                 y=-0.25,
                 xanchor="center",
-                x=0.5
+                x=0.5,
+                font=dict(size=11),
+                bgcolor="rgba(0,0,0,0)",
+                borderwidth=0,
             ),
-            margin=dict(t=50, b=90)
+            margin=dict(t=50, b=90, l=48, r=24),
+            title=dict(text=""),
         )
         st.plotly_chart(fig, use_container_width=True)
 
@@ -208,9 +216,13 @@ tabs = st.tabs(
                 yanchor="top",
                 y=-0.25,
                 xanchor="center",
-                x=0.5
+                x=0.5,
+                font=dict(size=11),
+                bgcolor="rgba(0,0,0,0)",
+                borderwidth=0,
             ),
-            margin=dict(t=50, b=90)
+            margin=dict(t=50, b=90, l=48, r=24),
+            title=dict(text=""),
         )
         st.plotly_chart(fig2, use_container_width=True)
         st.dataframe(
@@ -223,17 +235,6 @@ tabs = st.tabs(
                 "return_rate": st.column_config.ProgressColumn("Return rate", min_value=0, max_value=1, format="%.1f"),
             },
         )
-    
-
-        monthly.sort_values("return_adjusted_profit", ascending=False),
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "gross_revenue": st.column_config.NumberColumn("Gross revenue", format="₹%.0f"),
-            "return_adjusted_profit": st.column_config.NumberColumn("Return-adjusted profit", format="₹%.0f"),
-            "return_rate": st.column_config.ProgressColumn("Return rate", min_value=0, max_value=1, format="%.1f"),
-        },
-    )
 
 with tabs[1]:
     st.markdown('<div class="section-title">The bestseller flip</div>', unsafe_allow_html=True)
@@ -383,6 +384,9 @@ with tabs[6]:
         },
     )
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# TAB 7: CHANNEL MIX — FIXED: replaced st.bar_chart with Plotly to prevent bleeding
+# ═══════════════════════════════════════════════════════════════════════════════
 with tabs[7]:
     st.markdown('<div class="section-title">Channel mix</div>', unsafe_allow_html=True)
     st.markdown('<p class="section-note">Separate high-volume channels from channels that produce durable profit.</p>', unsafe_allow_html=True)
@@ -398,38 +402,77 @@ with tabs[7]:
     )
     channel_table["profit_per_order"] = channel_table["profit"] / channel_table["orders"]
     col1, col2 = st.columns([1.1, 1])
-        with col1:
-        import plotly.graph_objects as go
+    
+    with col1:
+        p = {
+            "bg": "#0D0E12",
+            "surface": "#14161E",
+            "text": "#E8E6E0",
+            "muted": "#7A7A90",
+            "accent1": "#FF6B35",
+            "accent2": "#00D4B1",
+            "grid": "#1E2030",
+            "border": "#2A2D3E",
+        } if dark_mode else {
+            "bg": "#F5F2ED",
+            "surface": "#FFFFFF",
+            "text": "#1A1814",
+            "muted": "#6B6860",
+            "accent1": "#E05520",
+            "accent2": "#009E85",
+            "grid": "#E8E4DC",
+            "border": "#D4D0C8",
+        }
+        
         fig_channel = go.Figure()
         fig_channel.add_trace(go.Bar(
             x=channel_table["channel"],
             y=channel_table["gross_revenue"],
             name="Gross Revenue",
-            marker_color="#FF6B35"
+            marker_color=p["accent1"],
+            text=channel_table["gross_revenue"].apply(lambda x: f"₹{x/100000:.1f}L"),
+            textposition="outside",
+            textfont=dict(size=10, color=p["text"]),
         ))
         fig_channel.add_trace(go.Bar(
             x=channel_table["channel"],
             y=channel_table["profit"],
             name="Profit",
-            marker_color="#00D4B1"
+            marker_color=p["accent2"],
+            text=channel_table["profit"].apply(lambda x: f"₹{x/100000:.1f}L"),
+            textposition="outside",
+            textfont=dict(size=10, color=p["text"]),
         ))
         fig_channel.update_layout(
             barmode="group",
-            template="plotly_dark" if dark_mode else "plotly_white",
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#E2E8F0" if dark_mode else "#1E293B"),
+            font=dict(color=p["text"], size=12),
             legend=dict(
                 orientation="h",
                 yanchor="top",
                 y=-0.25,
                 xanchor="center",
-                x=0.5
+                x=0.5,
+                font=dict(size=11),
+                bgcolor="rgba(0,0,0,0)",
+                borderwidth=0,
             ),
-            margin=dict(t=30, b=80),
-            xaxis_title="",
-            yaxis_title="",
-            height=400
+            margin=dict(t=30, b=90, l=48, r=24),
+            xaxis=dict(
+                gridcolor=p["grid"],
+                linecolor=p["border"],
+                tickfont=dict(color=p["muted"], size=11),
+                zeroline=False,
+            ),
+            yaxis=dict(
+                gridcolor=p["grid"],
+                linecolor=p["border"],
+                tickfont=dict(color=p["muted"], size=11),
+                zeroline=False,
+                tickprefix="₹",
+            ),
+            height=400,
         )
         st.plotly_chart(fig_channel, use_container_width=True)
     
