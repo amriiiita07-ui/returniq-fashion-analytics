@@ -408,7 +408,9 @@ with tabs[7]:
 with tabs[8]:
     st.markdown('<div class="section-title">Data lab</div>', unsafe_allow_html=True)
     st.markdown('<p class="section-note">Use this tab to explain the dataset, export files, and discuss SQL during interviews.</p>', unsafe_allow_html=True)
+
     col1, col2 = st.columns([1, 1])
+
     with col1:
         st.subheader("Dataset schema")
         st.dataframe(
@@ -416,23 +418,28 @@ with tabs[8]:
                 {
                     "column": filtered.columns,
                     "dtype": [str(dtype) for dtype in filtered.dtypes],
-                    "example": [str(filtered[column].iloc[0]) if len(filtered) else "" for column in filtered.columns],
+                    "example": [
+                        str(filtered[column].iloc[0]) if len(filtered) else ""
+                        for column in filtered.columns
+                    ],
                 }
             ),
             use_container_width=True,
             hide_index=True,
         )
+
     with col2:
         st.subheader("Interview SQL prompts")
         st.markdown(
             """
-            - Which top revenue SKUs are net loss-makers?
-            - Which size-category combinations drive the most leakage?
-            - How does Tier 2 profitability compare with Tier 1?
-            - Which channel has the best profit per order after returns?
-            - Which SKUs should merchandising fix before adding inventory?
+- Which top revenue SKUs are net loss-makers?
+- Which size-category combinations drive the most leakage?
+- How does Tier 2 profitability compare with Tier 1?
+- Which channel has the best profit per order after returns?
+- Which SKUs should merchandising fix before adding inventory?
             """
         )
+
         st.download_button(
             "Download SQL query pack",
             data=(APP_ROOT / "sql" / "analysis_queries.sql").read_text(encoding="utf-8"),
@@ -440,6 +447,7 @@ with tabs[8]:
             mime="text/sql",
             use_container_width=True,
         )
+
         st.download_button(
             "Download filtered dataset",
             data=filtered.to_csv(index=False),
