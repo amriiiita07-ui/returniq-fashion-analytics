@@ -181,37 +181,7 @@ tabs = st.tabs(
     ]
 )
 
-with tabs[0]:
-    st.markdown('<div class="section-title">Executive view</div>', unsafe_allow_html=True)
-    st.markdown('<p class="section-note">High-level performance after accounting for return economics.</p>', unsafe_allow_html=True)
-    col1, col2 = st.columns([1.55, 1])
-
-    with col1:
-        fig = monthly_profit_line(monthly, dark_mode)
-        fig.update_layout(
-            legend=dict(
-                orientation="h",
-                yanchor="top",      # anchor legend to its top edge
-                y=-0.15,            # push legend BELOW the chart (negative = below plot area)
-                xanchor="center",
-                x=0.5
-            ),
-            margin=dict(t=60, b=80)  # t=smaller top margin, b=more bottom space for legend
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col2:
-        fig2 = category_donut(monthly, dark_mode)
-        fig2.update_layout(
-            legend=dict(
-                orientation="h",
-                yanchor="top",
-                y=-0.15,
-                xanchor="center",
-                x=0.5
-            ),
-            margin=dict(t=60, b=80)
-        )
+    with tabs[0];
         st.plotly_chart(fig2, use_container_width=True)
         st.dataframe(
 
