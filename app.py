@@ -186,37 +186,28 @@ with tabs[0]:
     st.markdown('<p class="section-note">High-level performance after accounting for return economics.</p>', unsafe_allow_html=True)
     col1, col2 = st.columns([1.55, 1])
 
-with col1:
-    fig.update_layout(
-    legend=dict(
-        y=0.85   # 👈 pushes legend slightly DOWN
-    ),
-    margin=dict(t=100)  # 👈 pushes graph DOWN from title
-)
-    fig.update_layout(
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=-0.3,
-            xanchor="center",
-            x=0.5
-        ),
-        margin=dict(t=80)
-    )
-    st.plotly_chart(fig, use_container_width=True)
+    with col1:
+        fig = monthly_profit_line(monthly, dark_mode)
+        fig.update_layout(
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.3,
+                xanchor="center",
+                x=0.5
+            ),
+            margin=dict(t=80)
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
-with col2:
-    fig2.update_layout(
-    legend=dict(
-        y=0.85
-    ),
-    margin=dict(t=100)
-) 
-    fig2.update_layout(
-        margin=dict(t=80)
-    )
-    st.plotly_chart(fig2, use_container_width=True)
-    st.dataframe(
+    with col2:
+        fig2 = category_donut(monthly, dark_mode)
+        fig2.update_layout(
+            margin=dict(t=80)
+        )
+        st.plotly_chart(fig2, use_container_width=True)
+        st.dataframe(
+
         monthly.sort_values("return_adjusted_profit", ascending=False),
         use_container_width=True,
         hide_index=True,
