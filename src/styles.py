@@ -9,6 +9,8 @@ WHAT CHANGED
    Deep obsidian backgrounds, molten amber/coral accents, electric teal highlights.
 3. Plotly layout defaults baked in via `apply_theme(fig, dark)` so every chart
    is consistent without touching individual chart files.
+4. Hero panel CSS fixed → Added overflow:hidden and z-index stacking to prevent
+   chart bars from bleeding into hero text.
 """
 
 from __future__ import annotations
@@ -227,12 +229,19 @@ html, body, [data-testid="stAppViewContainer"],
     grid-template-columns: 1fr 320px;
     gap: 16px;
     margin: 16px 0 20px;
+    position: relative;
+    z-index: 10;          /* ← FIXED: hero sits above charts */
+    isolation: isolate;   /* ← FIXED: creates new stacking context */
 }}
 .hero-panel {{
     background: {p["surface"]};
     border: 1px solid {p["border"]};
     border-radius: 14px;
     padding: 24px 28px;
+    position: relative;
+    overflow: hidden;     /* ← FIXED: clips any bleeding content */
+    z-index: 11;          /* ← FIXED: above charts */
+    min-height: 200px;    /* ← FIXED: consistent height prevents collapse */
 }}
 .hero-copy {{
     font-size: 13px;
@@ -247,6 +256,7 @@ html, body, [data-testid="stAppViewContainer"],
     padding: 24px 28px;
     position: relative;
     overflow: hidden;
+    z-index: 11;          /* ← FIXED: above charts */
 }}
 .insight-panel::after {{
     content: '';
@@ -395,6 +405,17 @@ html, body, [data-testid="stAppViewContainer"],
 [data-testid="stDownloadButton"] > button:hover {{
     border-color: {p["accent2"]} !important;
     color: {p["accent2"]} !important;
+}}
+
+/* ── Chart container fixes ──────────────────────────────── */
+/* Prevent charts from bleeding into other sections */
+[data-testid="stPlotlyChart"] {{
+    position: relative;
+    z-index: 1;
+}}
+[data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"] {{
+    position: relative;
+    z-index: 1;
 }}
 </style>
 """
