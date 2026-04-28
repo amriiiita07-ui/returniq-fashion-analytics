@@ -191,19 +191,26 @@ with tabs[0]:
         fig.update_layout(
             legend=dict(
                 orientation="h",
-                yanchor="bottom",
-                y=-0.3,
+                yanchor="top",      # anchor legend to its top edge
+                y=-0.15,            # push legend BELOW the chart (negative = below plot area)
                 xanchor="center",
                 x=0.5
             ),
-            margin=dict(t=80)
+            margin=dict(t=60, b=80)  # t=smaller top margin, b=more bottom space for legend
         )
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
         fig2 = category_donut(monthly, dark_mode)
         fig2.update_layout(
-            margin=dict(t=80)
+            legend=dict(
+                orientation="h",
+                yanchor="top",
+                y=-0.15,
+                xanchor="center",
+                x=0.5
+            ),
+            margin=dict(t=60, b=80)
         )
         st.plotly_chart(fig2, use_container_width=True)
         st.dataframe(
