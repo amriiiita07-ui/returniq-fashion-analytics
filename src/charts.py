@@ -11,7 +11,6 @@ Individual chart functions no longer set legend/margin manually.
 from __future__ import annotations
 
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 
 from src.styles import apply_theme, cat_colors, palette
@@ -145,7 +144,36 @@ def return_reason_bar(filtered: pd.DataFrame, dark: bool) -> go.Figure:
 
 def size_heatmap_fig(heatmap: pd.DataFrame, dark: bool) -> go.Figure:
     p = palette(dark)
-    pivot = heatmap.pivot_table(index="category", columns="size", values="return_rate", aggfunc="mean")
+
+    # ── GUARD: return an empty figure if data is missing or unpivotable ───────
+    if (
+        heatmap is None
+        or heatmap.empty
+        or "category" not in heatmap.columns
+        or "size" not in heatmap.columns
+        or "return_rate" not in heatmap.columns
+    ):
+        fig = go.Figure()
+        fig.update_layout(title=dict(text="Size heatmap – no data available for current filter", x=0))
+        return _themed(fig, dark)
+
+    try:
+        pivot = heatmap.pivot_table(
+            index="category",
+            columns="size",
+            values="return_rate",
+            aggfunc="mean",
+        )
+    except (KeyError, ValueError):
+        fig = go.Figure()
+        fig.update_layout(title=dict(text="Size heatmap – could not build pivot for current filter", x=0))
+        return _themed(fig, dark)
+
+    if pivot.empty:
+        fig = go.Figure()
+        fig.update_layout(title=dict(text="Size heatmap – pivot returned no rows", x=0))
+        return _themed(fig, dark)
+
     fig = go.Figure(go.Heatmap(
         z=pivot.values,
         x=pivot.columns.tolist(),
