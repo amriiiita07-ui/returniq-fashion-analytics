@@ -187,7 +187,12 @@ with tabs[0]:
     col1, col2 = st.columns([1.55, 1])
 
 with col1:
-    fig = monthly_profit_line(monthly, dark_mode)
+    fig.update_layout(
+    legend=dict(
+        y=0.85   # 👈 pushes legend slightly DOWN
+    ),
+    margin=dict(t=100)  # 👈 pushes graph DOWN from title
+)
     fig.update_layout(
         legend=dict(
             orientation="h",
@@ -201,7 +206,12 @@ with col1:
     st.plotly_chart(fig, use_container_width=True)
 
 with col2:
-    fig2 = category_donut(filtered, dark_mode)
+    fig2.update_layout(
+    legend=dict(
+        y=0.85
+    ),
+    margin=dict(t=100)
+) 
     fig2.update_layout(
         margin=dict(t=80)
     )
