@@ -278,28 +278,55 @@ def inventory_risk_fig(inventory: pd.DataFrame, dark: bool) -> go.Figure:
 
 
 # ── 8. Cohort figure ──────────────────────────────────────────────────────────
+# ── 8. Cohort figure ──────────────────────────────────────────────────────────
 
 def cohort_fig(cohorts: pd.DataFrame, dark: bool) -> go.Figure:
     p = palette(dark)
     colors = cat_colors(dark)
+
+    # ── GUARD: empty or missing expected columns ──────────────────────────────
+    if cohorts is None or cohorts.empty:
+        fig = go.Figure()
+        fig.update_layout(title=dict(text="Customer cohorts – no data available", x=0))
+        return _themed(fig, dark)
+
+    # Detect whichever month column exists
+    month_col = None
+    for candidate in ("cohort_month", "month", "first_order_month", "cohort", "order_month"):
+        if candidate in cohorts.columns:
+            month_col = candidate
+            break
+
+    if month_col is None:
+        # Last resort: use the first column
+        month_col = cohorts.columns[0]
+
+    avg_profit_col    = "avg_profit"    if "avg_profit"    in cohorts.columns else None
+    repeat_rate_col   = "repeat_rate"   if "repeat_rate"   in cohorts.columns else None
+
     fig = go.Figure()
-    fig.add_trace(go.Bar(
-        x=cohorts["cohort_month"].astype(str),
-        y=cohorts["avg_profit"],
-        name="Avg profit",
-        marker=dict(color=colors[0], opacity=0.85),
-        hovertemplate="Month: %{x}<br>Avg profit: ₹%{y:,.0f}<extra></extra>",
-    ))
-    fig.add_trace(go.Scatter(
-        x=cohorts["cohort_month"].astype(str),
-        y=cohorts["repeat_rate"],
-        name="Repeat rate",
-        yaxis="y2",
-        mode="lines+markers",
-        line=dict(color=colors[1], width=2.5, dash="dot"),
-        marker=dict(size=6, color=colors[1]),
-        hovertemplate="Month: %{x}<br>Repeat rate: %{y:.1%}<extra></extra>",
-    ))
+
+    if avg_profit_col:
+        fig.add_trace(go.Bar(
+            x=cohorts[month_col].astype(str),
+            y=cohorts[avg_profit_col],
+            name="Avg profit",
+            marker=dict(color=colors[0], opacity=0.85),
+            hovertemplate="Month: %{x}<br>Avg profit: ₹%{y:,.0f}<extra></extra>",
+        ))
+
+    if repeat_rate_col:
+        fig.add_trace(go.Scatter(
+            x=cohorts[month_col].astype(str),
+            y=cohorts[repeat_rate_col],
+            name="Repeat rate",
+            yaxis="y2",
+            mode="lines+markers",
+            line=dict(color=colors[1], width=2.5, dash="dot"),
+            marker=dict(size=6, color=colors[1]),
+            hovertemplate="Month: %{x}<br>Repeat rate: %{y:.1%}<extra></extra>",
+        ))
+
     fig.update_layout(
         title=dict(text="Customer cohorts – avg profit & repeat rate", x=0),
         xaxis_title="Cohort month",
