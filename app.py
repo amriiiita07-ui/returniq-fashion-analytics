@@ -362,23 +362,25 @@ with tabs[4]:
 with tabs[5]:
     st.markdown('<div class="section-title">Inventory risk</div>', unsafe_allow_html=True)
     st.markdown('<p class="section-note">Find SKUs where stock pressure, markdown risk, and return rate collide.</p>', unsafe_allow_html=True)
-    col1, col2 = st.columns([1.25, 1])
-    with col1:
-        st.plotly_chart(inventory_risk_fig(inventory, dark_mode), use_container_width=True)
-    with col2:
-        st.dataframe(
-            inventory.head(18),
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "gross_revenue": st.column_config.NumberColumn("Revenue", format="₹%.0f"),
-                "return_adjusted_profit": st.column_config.NumberColumn("Profit", format="₹%.0f"),
-                "stockout_risk": st.column_config.ProgressColumn("Stockout", min_value=0, max_value=1, format="%.1f"),
-                "markdown_risk": st.column_config.ProgressColumn("Markdown", min_value=0, max_value=1, format="%.1f"),
-                "return_rate": st.column_config.ProgressColumn("Returns", min_value=0, max_value=1, format="%.1f"),
-                "risk_score": st.column_config.ProgressColumn("Risk score", min_value=0, max_value=1, format="%.1f"),
-            },
-        )
+
+    # Chart full width
+    st.plotly_chart(inventory_risk_fig(inventory, dark_mode), use_container_width=True)
+
+    # Table full width below chart
+    st.dataframe(
+        inventory.head(18),
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "gross_revenue": st.column_config.NumberColumn("Revenue", format="₹%.0f"),
+            "return_adjusted_profit": st.column_config.NumberColumn("Profit", format="₹%.0f"),
+            "stockout_risk": st.column_config.ProgressColumn("Stockout", min_value=0, max_value=1, format="%.1f"),
+            "markdown_risk": st.column_config.ProgressColumn("Markdown", min_value=0, max_value=1, format="%.1f"),
+            "return_rate": st.column_config.ProgressColumn("Returns", min_value=0, max_value=1, format="%.1f"),
+            "risk_score": st.column_config.ProgressColumn("Risk score", min_value=0, max_value=1, format="%.1f"),
+        },
+    )
+
 
 with tabs[6]:
     st.markdown('<div class="section-title">Customer cohorts</div>', unsafe_allow_html=True)
