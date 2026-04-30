@@ -126,6 +126,46 @@ with st.sidebar:
     )
 
 st.markdown(app_css(dark_mode), unsafe_allow_html=True)
+
+st.markdown("""
+<style>
+/* ── Force ALL dataframes to full viewport width ── */
+[data-testid="stDataFrame"] {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+[data-testid="stDataFrame"] > div {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* ── Break out of any column constraint ── */
+[data-testid="stDataFrame"] iframe {
+    width: 100% !important;
+    min-width: 100% !important;
+}
+
+/* ── Ensure the column containers don't clip ── */
+[data-testid="column"] {
+    overflow: visible !important;
+}
+
+/* ── Tab content area full width ── */
+[data-testid="stTabContent"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* ── Target specifically tables that are direct children of tab ── */
+[data-testid="stTabContent"] > div > div > [data-testid="stDataFrame"] {
+    width: 100vw !important;
+    margin-left: calc(-1 * var(--sidebar-width, 0px)) !important;
+}
+</style>
+""", unsafe_allow_html=True)
 render_topbar(dark_mode)
 
 filtered = filter_orders(orders, categories, tiers, channels, date_range)
@@ -384,25 +424,24 @@ with tabs[5]:
 with tabs[6]:
     st.markdown('<div class="section-title">Customer cohorts</div>', unsafe_allow_html=True)
     st.markdown('<p class="section-note">Track acquisition quality, repeat rate, and returner behavior by first purchase month.</p>', unsafe_allow_html=True)
-    
+
     st.plotly_chart(cohort_fig(cohorts, dark_mode), use_container_width=True)
-    
-    st.markdown("---")
-    
-    # Force full width with explicit column spanning
-    full_width = st.columns([1])[0]
-    with full_width:
-        st.dataframe(
-            cohorts,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "repeat_rate": st.column_config.ProgressColumn("Repeat rate", min_value=0, max_value=1, format="%.1f"),
-                "avg_revenue": st.column_config.NumberColumn("Avg revenue", format="₹%.0f"),
-                "avg_profit": st.column_config.NumberColumn("Avg profit", format="₹%.0f"),
-                "returner_rate": st.column_config.ProgressColumn("Returner rate", min_value=0, max_value=1, format="%.1f"),
-            },
-        )
+
+    # Escape any column context with a placeholder trick
+    st.markdown('<div style="width:100%;clear:both;display:block;">', unsafe_allow_html=True)
+    st.dataframe(
+        cohorts,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "repeat_rate": st.column_config.ProgressColumn("Repeat rate", min_value=0, max_value=1, format="%.1f"),
+            "avg_revenue": st.column_config.NumberColumn("Avg revenue", format="₹%.0f"),
+            "avg_profit": st.column_config.NumberColumn("Avg profit", format="₹%.0f"),
+            "returner_rate": st.column_config.ProgressColumn("Returner rate", min_value=0, max_value=1, format="%.1f"),
+        },
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 7: CHANNEL MIX — FIXED: replaced st.bar_chart with Plotly to prevent bleeding
