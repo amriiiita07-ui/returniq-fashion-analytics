@@ -173,7 +173,6 @@ metrics = kpis(filtered)
 products = product_profitability(filtered)
 monthly = category_monthly(filtered)
 
-# FIX: Handle missing size column gracefully
 try:
     heatmap = size_heatmap(filtered)
 except (KeyError, ValueError):
@@ -228,9 +227,6 @@ tabs = st.tabs(
     ]
 )
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# TAB 0: COMMAND CENTER — FIXED: proper indentation, fig/fig2 defined first
-# ═══════════════════════════════════════════════════════════════════════════════
 with tabs[0]:
     st.markdown('<div class="section-title">Executive view</div>', unsafe_allow_html=True)
     st.markdown('<p class="section-note">High-level performance after accounting for return economics.</p>', unsafe_allow_html=True)
@@ -273,7 +269,7 @@ with tabs[0]:
         )
         st.plotly_chart(fig2, use_container_width=True)
 
-    # ── Dataframe OUTSIDE columns — full width ──
+
     st.dataframe(
         monthly.sort_values("return_adjusted_profit", ascending=False),
         use_container_width=True,
@@ -446,9 +442,6 @@ with tabs[6]:
     st.markdown('</div>', unsafe_allow_html=True)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# TAB 7: CHANNEL MIX — FIXED: replaced st.bar_chart with Plotly to prevent bleeding
-# ═══════════════════════════════════════════════════════════════════════════════
 with tabs[7]:
     st.markdown('<div class="section-title">Channel mix</div>', unsafe_allow_html=True)
     st.markdown('<p class="section-note">Separate high-volume channels from channels that produce durable profit.</p>', unsafe_allow_html=True)
