@@ -25,34 +25,30 @@ def _themed(fig, dark: bool) -> go.Figure:
 
 # ── 1. Monthly profit line ────────────────────────────────────────────────────
 
-def monthly_profit_line(monthly: pd.DataFrame, dark: bool) -> go.Figure:
-    p = palette(dark)
-    colors = cat_colors(dark)
-    fig = go.Figure()
-    for i, cat in enumerate(monthly["Category"].unique()):
-        df = monthly[monthly["Category"] == cat].sort_values("Month")
-        color = colors[i % len(colors)]
-        fig.add_trace(go.Scatter(
-            x=df["Month"],
-            y=df["return_adjusted_profit"],
-            name=cat,
-            mode="lines+markers",
-            line=dict(color=color, width=2.5, shape="spline"),
-            marker=dict(size=6, color=color, line=dict(width=1.5, color=p["surface"])),
-            hovertemplate=f"<b>{cat}</b><br>Month: %{{x}}<br>Profit: ₹%{{y:,.0f}}<extra></extra>",
-        ))
-    fig.update_layout(title=dict(text="Return-adjusted profit by month", x=0))
-    return _themed(fig, dark)
-
-
+monthly_display = monthly.sort_values("return_adjusted_profit", ascending=False).rename(columns={
+        "month": "Month", "category": "Category",
+        "gross_revenue": "Gross Revenue",
+        "return_adjusted_profit": "Return-Adjusted Profit",
+        "return_rate": "Return Rate",
+    })
+    st.dataframe(
+        monthly_display,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Gross Revenue": st.column_config.NumberColumn("Gross Revenue", format="₹%.0f"),
+            "Return-Adjusted Profit": st.column_config.NumberColumn("Return-Adjusted Profit", format="₹%.0f"),
+            "Return Rate": st.column_config.ProgressColumn("Return Rate", min_value=0, max_value=1, format="%.1f"),
+        },
+    )
 # ── 2. Category donut ─────────────────────────────────────────────────────────
 
 def category_donut(monthly: pd.DataFrame, dark: bool) -> go.Figure:
     p = palette(dark)
-    agg = monthly.groupby("Category", as_index=False)["return_adjusted_profit"].sum()
+    agg = monthly.groupby("category", as_index=False)["return_adjusted_profit"].sum()
     colors = cat_colors(dark)
     fig = go.Figure(go.Pie(
-        labels=agg["Category"],
+        labels=agg["category"],
         values=agg["return_adjusted_profit"],
         hole=0.62,
         marker=dict(colors=colors[:len(agg)], line=dict(color=p["surface"], width=2)),
@@ -77,7 +73,7 @@ def revenue_profit_bar(products: pd.DataFrame, dark: bool) -> go.Figure:
     top = products.head(15).sort_values("gross_revenue", ascending=True)
     fig = go.Figure()
     fig.add_trace(go.Bar(
-        y=top["Sku"],
+        y=top["sku"],
         x=top["gross_revenue"],
         name="Gross revenue",
         orientation="h",
@@ -85,7 +81,7 @@ def revenue_profit_bar(products: pd.DataFrame, dark: bool) -> go.Figure:
         hovertemplate="<b>%{y}</b><br>Revenue: ₹%{x:,.0f}<extra></extra>",
     ))
     fig.add_trace(go.Bar(
-        y=top["Sku"],
+        y=top["sku"],
         x=top["return_adjusted_profit"],
         name="Real profit",
         orientation="h",
@@ -107,37 +103,21 @@ def revenue_profit_bar(products: pd.DataFrame, dark: bool) -> go.Figure:
 
 # ── 4. Return reason bar ─────────────────────────────────────────────────────
 
-def return_reason_bar(filtered: pd.DataFrame, dark: bool) -> go.Figure:
-    p = palette(dark)
-    reason = (
-        filtered[filtered["Returned"]]
-        .groupby("Return_reason", as_index=False)
-        .agg(refunds=("Refund_amount", "sum"), reverse=("return_logistics_cost", "sum"))
-    )
-    reason["total"] = reason["refunds"] + reason["reverse"]
-    reason = reason.sort_values("total", ascending=True)
-    fig = go.Figure()
-    fig.add_trace(go.Bar(
-        y=reason["return_reason"],
-        x=reason["refunds"],
-        name="Refunds",
-        orientation="h",
-        marker=dict(color=p["accent3"], opacity=0.85),
-    ))
-    fig.add_trace(go.Bar(
-        y=reason["return_reason"],
-        x=reason["reverse"],
-        name="Reverse logistics",
-        orientation="h",
-        marker=dict(color=p["accent1"], opacity=0.85),
-    ))
-    fig.update_layout(
-        title=dict(text="Return leakage by reason", x=0),
-        barmode="stack",
-        xaxis_title="₹ leakage",
-        yaxis=dict(automargin=True),
-    )
-    return _themed(fig, dark)
+reason_display = reason_table.rename(columns={
+            "return_reason": "Return Reason", "orders": "Orders",
+            "refunds": "Refunds", "reverse_logistics": "Reverse Logistics",
+            "total_leakage": "Total Leakage",
+        })
+        st.dataframe(
+            reason_display,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Refunds": st.column_config.NumberColumn("Refunds", format="₹%.0f"),
+                "Reverse Logistics": st.column_config.NumberColumn("Reverse Logistics", format="₹%.0f"),
+                "Total Leakage": st.column_config.NumberColumn("Total Leakage", format="₹%.0f"),
+            },
+        )
 
 
 # ── 5. Size heatmap ───────────────────────────────────────────────────────────
