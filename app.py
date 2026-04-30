@@ -265,13 +265,15 @@ with tabs[3]:
     st.markdown('<div class="section-title">Size intelligence</div>', unsafe_allow_html=True)
     st.markdown('<p class="section-note">Sizing is treated as a measurable product-data problem.</p>', unsafe_allow_html=True)
     col1, col2 = st.columns([1.25, 1])
-    # Use full dataset for heatmap if current filter yields no sized products
-    heatmap_source = filtered[filtered["size"] != "One Size"]
-    if heatmap_source.empty or heatmap_source["category"].nunique() == 0:
-        heatmap_data = size_heatmap(orders)
+
+    # Always recompute heatmap fresh; fall back to full orders if filter has no size data
+    heatmap_source_check = filtered[filtered["size"] != "One Size"]
+    if heatmap_source_check.empty or heatmap_source_check["category"].nunique() == 0:
+        heatmap_data = size_heatmap(orders)   # full dataset fallback
         st.info("No size data for the current filter — showing full-dataset heatmap.", icon="ℹ️")
     else:
-        heatmap_data = size_heatmap(filtered)   # ← recompute from filtered, not stale `heatmap`
+        heatmap_data = size_heatmap(heatmap_source_check)  # ← pass pre-filtered sized rows
+
     with col1:
         st.plotly_chart(size_heatmap_fig(heatmap_data, dark_mode), use_container_width=True)
     with col2:
@@ -290,7 +292,6 @@ with tabs[3]:
                 .sort_values("return_rate", ascending=False)
                 .head(15)
             )
-        # Rename columns to title case
         size_table = size_table.rename(columns={
             "category": "Category", "size": "Size",
             "orders": "Orders", "return_rate": "Return Rate", "profit": "Profit"
