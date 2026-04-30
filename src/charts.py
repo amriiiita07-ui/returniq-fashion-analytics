@@ -29,11 +29,11 @@ def monthly_profit_line(monthly: pd.DataFrame, dark: bool) -> go.Figure:
     p = palette(dark)
     colors = cat_colors(dark)
     fig = go.Figure()
-    for i, cat in enumerate(monthly["category"].unique()):
-        df = monthly[monthly["category"] == cat].sort_values("month")
+    for i, cat in enumerate(monthly["Category"].unique()):
+        df = monthly[monthly["Category"] == cat].sort_values("Month")
         color = colors[i % len(colors)]
         fig.add_trace(go.Scatter(
-            x=df["month"],
+            x=df["Month"],
             y=df["return_adjusted_profit"],
             name=cat,
             mode="lines+markers",
@@ -49,10 +49,10 @@ def monthly_profit_line(monthly: pd.DataFrame, dark: bool) -> go.Figure:
 
 def category_donut(monthly: pd.DataFrame, dark: bool) -> go.Figure:
     p = palette(dark)
-    agg = monthly.groupby("category", as_index=False)["return_adjusted_profit"].sum()
+    agg = monthly.groupby("Category", as_index=False)["return_adjusted_profit"].sum()
     colors = cat_colors(dark)
     fig = go.Figure(go.Pie(
-        labels=agg["category"],
+        labels=agg["Category"],
         values=agg["return_adjusted_profit"],
         hole=0.62,
         marker=dict(colors=colors[:len(agg)], line=dict(color=p["surface"], width=2)),
@@ -77,7 +77,7 @@ def revenue_profit_bar(products: pd.DataFrame, dark: bool) -> go.Figure:
     top = products.head(15).sort_values("gross_revenue", ascending=True)
     fig = go.Figure()
     fig.add_trace(go.Bar(
-        y=top["sku"],
+        y=top["Sku"],
         x=top["gross_revenue"],
         name="Gross revenue",
         orientation="h",
@@ -85,7 +85,7 @@ def revenue_profit_bar(products: pd.DataFrame, dark: bool) -> go.Figure:
         hovertemplate="<b>%{y}</b><br>Revenue: ₹%{x:,.0f}<extra></extra>",
     ))
     fig.add_trace(go.Bar(
-        y=top["sku"],
+        y=top["Sku"],
         x=top["return_adjusted_profit"],
         name="Real profit",
         orientation="h",
@@ -110,9 +110,9 @@ def revenue_profit_bar(products: pd.DataFrame, dark: bool) -> go.Figure:
 def return_reason_bar(filtered: pd.DataFrame, dark: bool) -> go.Figure:
     p = palette(dark)
     reason = (
-        filtered[filtered["returned"]]
-        .groupby("return_reason", as_index=False)
-        .agg(refunds=("refund_amount", "sum"), reverse=("return_logistics_cost", "sum"))
+        filtered[filtered["Returned"]]
+        .groupby("Return_reason", as_index=False)
+        .agg(refunds=("Refund_amount", "sum"), reverse=("return_logistics_cost", "sum"))
     )
     reason["total"] = reason["refunds"] + reason["reverse"]
     reason = reason.sort_values("total", ascending=True)
