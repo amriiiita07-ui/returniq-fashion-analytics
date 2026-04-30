@@ -271,7 +271,7 @@ with tabs[3]:
         heatmap_data = size_heatmap(orders)
         st.info("No size data for the current filter — showing full-dataset heatmap.", icon="ℹ️")
     else:
-        heatmap_data = heatmap
+        heatmap_data = size_heatmap(filtered)   # ← recompute from filtered, not stale `heatmap`
     with col1:
         st.plotly_chart(size_heatmap_fig(heatmap_data, dark_mode), use_container_width=True)
     with col2:
@@ -290,13 +290,18 @@ with tabs[3]:
                 .sort_values("return_rate", ascending=False)
                 .head(15)
             )
+        # Rename columns to title case
+        size_table = size_table.rename(columns={
+            "category": "Category", "size": "Size",
+            "orders": "Orders", "return_rate": "Return Rate", "profit": "Profit"
+        })
         st.dataframe(
             size_table,
             use_container_width=True,
             hide_index=True,
             column_config={
-                "return_rate": st.column_config.ProgressColumn("Return rate", min_value=0, max_value=1, format="%.1f"),
-                "profit": st.column_config.NumberColumn("Profit", format="₹%.0f"),
+                "Return Rate": st.column_config.ProgressColumn("Return Rate", min_value=0, max_value=1, format="%.1f"),
+                "Profit": st.column_config.NumberColumn("Profit", format="₹%.0f"),
             },
         )
 
