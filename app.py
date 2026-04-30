@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-import plotly.graph_objects as go
 import streamlit as st
 
 from src.analytics import (
@@ -126,58 +125,13 @@ with st.sidebar:
     )
 
 st.markdown(app_css(dark_mode), unsafe_allow_html=True)
-
-st.markdown("""
-<style>
-/* ── Force ALL dataframes to full viewport width ── */
-[data-testid="stDataFrame"] {
-    width: 100% !important;
-    max-width: 100% !important;
-}
-
-[data-testid="stDataFrame"] > div {
-    width: 100% !important;
-    max-width: 100% !important;
-}
-
-/* ── Break out of any column constraint ── */
-[data-testid="stDataFrame"] iframe {
-    width: 100% !important;
-    min-width: 100% !important;
-}
-
-/* ── Ensure the column containers don't clip ── */
-[data-testid="column"] {
-    overflow: visible !important;
-}
-
-/* ── Tab content area full width ── */
-[data-testid="stTabContent"] {
-    width: 100% !important;
-    max-width: 100% !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-}
-
-/* ── Target specifically tables that are direct children of tab ── */
-[data-testid="stTabContent"] > div > div > [data-testid="stDataFrame"] {
-    width: 100vw !important;
-    margin-left: calc(-1 * var(--sidebar-width, 0px)) !important;
-}
-</style>
-""", unsafe_allow_html=True)
 render_topbar(dark_mode)
 
 filtered = filter_orders(orders, categories, tiers, channels, date_range)
 metrics = kpis(filtered)
 products = product_profitability(filtered)
 monthly = category_monthly(filtered)
-
-try:
-    heatmap = size_heatmap(filtered)
-except (KeyError, ValueError):
-    heatmap = pd.DataFrame()
-
+heatmap = size_heatmap(filtered)
 tiers_df = city_tier_summary(filtered)
 cohorts = cohort_summary(filtered)
 inventory = inventory_risk(filtered)
@@ -230,46 +184,11 @@ tabs = st.tabs(
 with tabs[0]:
     st.markdown('<div class="section-title">Executive view</div>', unsafe_allow_html=True)
     st.markdown('<p class="section-note">High-level performance after accounting for return economics.</p>', unsafe_allow_html=True)
-    
-    # Charts side by side
     col1, col2 = st.columns([1.55, 1])
     with col1:
-        fig = monthly_profit_line(monthly, dark_mode)
-        fig.update_layout(
-            legend=dict(
-                orientation="h",
-                yanchor="top",
-                y=-0.25,
-                xanchor="center",
-                x=0.5,
-                font=dict(size=11),
-                bgcolor="rgba(0,0,0,0)",
-                borderwidth=0,
-            ),
-            margin=dict(t=50, b=90, l=48, r=24),
-            title=dict(text=""),
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
+        st.plotly_chart(monthly_profit_line(monthly, dark_mode), use_container_width=True)
     with col2:
-        fig2 = category_donut(monthly, dark_mode)
-        fig2.update_layout(
-            legend=dict(
-                orientation="h",
-                yanchor="top",
-                y=-0.25,
-                xanchor="center",
-                x=0.5,
-                font=dict(size=11),
-                bgcolor="rgba(0,0,0,0)",
-                borderwidth=0,
-            ),
-            margin=dict(t=50, b=90, l=48, r=24),
-            title=dict(text=""),
-        )
-        st.plotly_chart(fig2, use_container_width=True)
-
-
+        st.plotly_chart(category_donut(filtered, dark_mode), use_container_width=True)
     st.dataframe(
         monthly.sort_values("return_adjusted_profit", ascending=False),
         use_container_width=True,
@@ -346,31 +265,40 @@ with tabs[3]:
     st.markdown('<div class="section-title">Size intelligence</div>', unsafe_allow_html=True)
     st.markdown('<p class="section-note">Sizing is treated as a measurable product-data problem.</p>', unsafe_allow_html=True)
     col1, col2 = st.columns([1.25, 1])
+    # Use full dataset for heatmap if current filter yields no sized products
+    heatmap_source = filtered[filtered["size"] != "One Size"]
+    if heatmap_source.empty or heatmap_source["category"].nunique() == 0:
+        heatmap_data = size_heatmap(orders)
+        st.info("No size data for the current filter — showing full-dataset heatmap.", icon="ℹ️")
+    else:
+        heatmap_data = heatmap
     with col1:
-        if not heatmap.empty:
-            st.plotly_chart(size_heatmap_fig(heatmap, dark_mode), use_container_width=True)
-        else:
-            st.info("No size data available for current filter.")
+        st.plotly_chart(size_heatmap_fig(heatmap_data, dark_mode), use_container_width=True)
     with col2:
-        if "size" in filtered.columns and "category" in filtered.columns:
+        size_table = (
+            filtered[filtered["size"] != "One Size"]
+            .groupby(["category", "size"], as_index=False)
+            .agg(orders=("order_id", "count"), return_rate=("returned", "mean"), profit=("return_adjusted_profit", "sum"))
+            .sort_values("return_rate", ascending=False)
+            .head(15)
+        )
+        if size_table.empty:
             size_table = (
-                filtered[filtered["size"] != "One Size"]
+                orders[orders["size"] != "One Size"]
                 .groupby(["category", "size"], as_index=False)
                 .agg(orders=("order_id", "count"), return_rate=("returned", "mean"), profit=("return_adjusted_profit", "sum"))
                 .sort_values("return_rate", ascending=False)
                 .head(15)
             )
-            st.dataframe(
-                size_table,
-                use_container_width=True,
-                hide_index=True,
-                column_config={
-                    "return_rate": st.column_config.ProgressColumn("Return rate", min_value=0, max_value=1, format="%.1f"),
-                    "profit": st.column_config.NumberColumn("Profit", format="₹%.0f"),
-                },
-            )
-        else:
-            st.info("Size data not available.")
+        st.dataframe(
+            size_table,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "return_rate": st.column_config.ProgressColumn("Return rate", min_value=0, max_value=1, format="%.1f"),
+                "profit": st.column_config.NumberColumn("Profit", format="₹%.0f"),
+            },
+        )
 
 with tabs[4]:
     st.markdown('<div class="section-title">India city-tier lens</div>', unsafe_allow_html=True)
@@ -401,33 +329,28 @@ with tabs[4]:
 with tabs[5]:
     st.markdown('<div class="section-title">Inventory risk</div>', unsafe_allow_html=True)
     st.markdown('<p class="section-note">Find SKUs where stock pressure, markdown risk, and return rate collide.</p>', unsafe_allow_html=True)
-
-    # Chart full width
-    st.plotly_chart(inventory_risk_fig(inventory, dark_mode), use_container_width=True)
-
-    # Table full width below chart
-    st.dataframe(
-        inventory.head(18),
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "gross_revenue": st.column_config.NumberColumn("Revenue", format="₹%.0f"),
-            "return_adjusted_profit": st.column_config.NumberColumn("Profit", format="₹%.0f"),
-            "stockout_risk": st.column_config.ProgressColumn("Stockout", min_value=0, max_value=1, format="%.1f"),
-            "markdown_risk": st.column_config.ProgressColumn("Markdown", min_value=0, max_value=1, format="%.1f"),
-            "return_rate": st.column_config.ProgressColumn("Returns", min_value=0, max_value=1, format="%.1f"),
-            "risk_score": st.column_config.ProgressColumn("Risk score", min_value=0, max_value=1, format="%.1f"),
-        },
-    )
+    col1, col2 = st.columns([1.25, 1])
+    with col1:
+        st.plotly_chart(inventory_risk_fig(inventory, dark_mode), use_container_width=True)
+    with col2:
+        st.dataframe(
+            inventory.head(18),
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "gross_revenue": st.column_config.NumberColumn("Revenue", format="₹%.0f"),
+                "return_adjusted_profit": st.column_config.NumberColumn("Profit", format="₹%.0f"),
+                "stockout_risk": st.column_config.ProgressColumn("Stockout", min_value=0, max_value=1, format="%.1f"),
+                "markdown_risk": st.column_config.ProgressColumn("Markdown", min_value=0, max_value=1, format="%.1f"),
+                "return_rate": st.column_config.ProgressColumn("Returns", min_value=0, max_value=1, format="%.1f"),
+                "risk_score": st.column_config.ProgressColumn("Risk score", min_value=0, max_value=1, format="%.1f"),
+            },
+        )
 
 with tabs[6]:
     st.markdown('<div class="section-title">Customer cohorts</div>', unsafe_allow_html=True)
     st.markdown('<p class="section-note">Track acquisition quality, repeat rate, and returner behavior by first purchase month.</p>', unsafe_allow_html=True)
-
     st.plotly_chart(cohort_fig(cohorts, dark_mode), use_container_width=True)
-
-    # Escape any column context with a placeholder trick
-    st.markdown('<div style="width:100%;clear:both;display:block;">', unsafe_allow_html=True)
     st.dataframe(
         cohorts,
         use_container_width=True,
@@ -439,8 +362,6 @@ with tabs[6]:
             "returner_rate": st.column_config.ProgressColumn("Returner rate", min_value=0, max_value=1, format="%.1f"),
         },
     )
-    st.markdown('</div>', unsafe_allow_html=True)
-
 
 with tabs[7]:
     st.markdown('<div class="section-title">Channel mix</div>', unsafe_allow_html=True)
@@ -457,80 +378,8 @@ with tabs[7]:
     )
     channel_table["profit_per_order"] = channel_table["profit"] / channel_table["orders"]
     col1, col2 = st.columns([1.1, 1])
-    
     with col1:
-        p = {
-            "bg": "#0D0E12",
-            "surface": "#14161E",
-            "text": "#E8E6E0",
-            "muted": "#7A7A90",
-            "accent1": "#FF6B35",
-            "accent2": "#00D4B1",
-            "grid": "#1E2030",
-            "border": "#2A2D3E",
-        } if dark_mode else {
-            "bg": "#F5F2ED",
-            "surface": "#FFFFFF",
-            "text": "#1A1814",
-            "muted": "#6B6860",
-            "accent1": "#E05520",
-            "accent2": "#009E85",
-            "grid": "#E8E4DC",
-            "border": "#D4D0C8",
-        }
-        
-        fig_channel = go.Figure()
-        fig_channel.add_trace(go.Bar(
-            x=channel_table["channel"],
-            y=channel_table["gross_revenue"],
-            name="Gross Revenue",
-            marker_color=p["accent1"],
-            text=channel_table["gross_revenue"].apply(lambda x: f"₹{x/100000:.1f}L"),
-            textposition="outside",
-            textfont=dict(size=10, color=p["text"]),
-        ))
-        fig_channel.add_trace(go.Bar(
-            x=channel_table["channel"],
-            y=channel_table["profit"],
-            name="Profit",
-            marker_color=p["accent2"],
-            text=channel_table["profit"].apply(lambda x: f"₹{x/100000:.1f}L"),
-            textposition="outside",
-            textfont=dict(size=10, color=p["text"]),
-        ))
-        fig_channel.update_layout(
-            barmode="group",
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color=p["text"], size=12),
-            legend=dict(
-                orientation="h",
-                yanchor="top",
-                y=-0.25,
-                xanchor="center",
-                x=0.5,
-                font=dict(size=11),
-                bgcolor="rgba(0,0,0,0)",
-                borderwidth=0,
-            ),
-            margin=dict(t=30, b=90, l=48, r=24),
-            xaxis=dict(
-                gridcolor=p["grid"],
-                linecolor=p["border"],
-                tickfont=dict(color=p["muted"], size=11),
-                zeroline=False,
-            ),
-            yaxis=dict(
-                gridcolor=p["grid"],
-                linecolor=p["border"],
-                tickfont=dict(color=p["muted"], size=11),
-                zeroline=False,
-                tickprefix="₹",
-            ),
-            height=400,
-        )
-        st.plotly_chart(fig_channel, use_container_width=True)
-    
+        st.bar_chart(channel_table.set_index("channel")[["gross_revenue", "profit"]], use_container_width=True)
     with col2:
         st.dataframe(
             channel_table,
@@ -546,10 +395,8 @@ with tabs[7]:
 
 with tabs[8]:
     st.markdown('<div class="section-title">Data lab</div>', unsafe_allow_html=True)
-    st.markdown('<p class="section-note">Use this tab to explain the dataset, export files, and discuss SQL during interviews.</p>', unsafe_allow_html=True)
-
-    col1, col2 = st.columns([1, 1])
-
+    st.markdown('<p class="section-note">Explore the dataset schema and export filtered data for deeper analysis.</p>', unsafe_allow_html=True)
+    col1, col2 = st.columns([1.6, 1])
     with col1:
         st.subheader("Dataset schema")
         st.dataframe(
@@ -557,40 +404,26 @@ with tabs[8]:
                 {
                     "column": filtered.columns,
                     "dtype": [str(dtype) for dtype in filtered.dtypes],
-                    "example": [
-                        str(filtered[column].iloc[0]) if len(filtered) else ""
-                        for column in filtered.columns
-                    ],
+                    "example": [str(filtered[column].iloc[0]) if len(filtered) else "" for column in filtered.columns],
                 }
             ),
             use_container_width=True,
             hide_index=True,
         )
-
     with col2:
-        st.subheader("Interview SQL prompts")
-        st.markdown(
-            """
-- Which top revenue SKUs are net loss-makers?
-- Which size-category combinations drive the most leakage?
-- How does Tier 2 profitability compare with Tier 1?
-- Which channel has the best profit per order after returns?
-- Which SKUs should merchandising fix before adding inventory?
-            """
-        )
-
+        st.subheader("Export data")
+        st.markdown(f"**{len(filtered):,}** orders match the current filter.")
         st.download_button(
-            "Download SQL query pack",
-            data=(APP_ROOT / "sql" / "analysis_queries.sql").read_text(encoding="utf-8"),
-            file_name="returniq_analysis_queries.sql",
-            mime="text/sql",
-            use_container_width=True,
-        )
-
-        st.download_button(
-            "Download filtered dataset",
+            "⬇ Download filtered dataset",
             data=filtered.to_csv(index=False),
             file_name="returniq_filtered_orders.csv",
             mime="text/csv",
+            use_container_width=True,
+        )
+        st.download_button(
+            "⬇ Download SQL query pack",
+            data=(APP_ROOT / "sql" / "analysis_queries.sql").read_text(encoding="utf-8"),
+            file_name="returniq_analysis_queries.sql",
+            mime="text/sql",
             use_container_width=True,
         )
