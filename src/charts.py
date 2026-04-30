@@ -75,19 +75,13 @@ def return_reason_bar(df: pd.DataFrame, dark_mode: bool) -> go.Figure:
 
 
 def size_heatmap_fig(heatmap: pd.DataFrame, dark_mode: bool) -> go.Figure:
-    # Reset named index/columns from pivot_table — px.imshow renders blank otherwise
-    clean = heatmap.copy()
-    clean.index.name = None
-    clean.columns.name = None
     fig = px.imshow(
-        clean,
+        heatmap,
         text_auto=".0%",
         aspect="auto",
         color_continuous_scale=["#0f766e", "#facc15", "#e11d48"],
         title="Size-category return rate heatmap",
-        labels=dict(x="Size", y="Category", color="Return rate"),
     )
-    fig.update_traces(textfont_size=13)
     return polish(fig, dark_mode, 390)
 
 
