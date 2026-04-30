@@ -234,8 +234,9 @@ tabs = st.tabs(
 with tabs[0]:
     st.markdown('<div class="section-title">Executive view</div>', unsafe_allow_html=True)
     st.markdown('<p class="section-note">High-level performance after accounting for return economics.</p>', unsafe_allow_html=True)
+    
+    # Charts side by side
     col1, col2 = st.columns([1.55, 1])
-
     with col1:
         fig = monthly_profit_line(monthly, dark_mode)
         fig.update_layout(
@@ -271,16 +272,18 @@ with tabs[0]:
             title=dict(text=""),
         )
         st.plotly_chart(fig2, use_container_width=True)
-        st.dataframe(
-            monthly.sort_values("return_adjusted_profit", ascending=False),
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "gross_revenue": st.column_config.NumberColumn("Gross revenue", format="₹%.0f"),
-                "return_adjusted_profit": st.column_config.NumberColumn("Return-adjusted profit", format="₹%.0f"),
-                "return_rate": st.column_config.ProgressColumn("Return rate", min_value=0, max_value=1, format="%.1f"),
-            },
-        )
+
+    # ── Dataframe OUTSIDE columns — full width ──
+    st.dataframe(
+        monthly.sort_values("return_adjusted_profit", ascending=False),
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "gross_revenue": st.column_config.NumberColumn("Gross revenue", format="₹%.0f"),
+            "return_adjusted_profit": st.column_config.NumberColumn("Return-adjusted profit", format="₹%.0f"),
+            "return_rate": st.column_config.ProgressColumn("Return rate", min_value=0, max_value=1, format="%.1f"),
+        },
+    )
 
 with tabs[1]:
     st.markdown('<div class="section-title">The bestseller flip</div>', unsafe_allow_html=True)
