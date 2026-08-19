@@ -287,7 +287,7 @@ This dashboard is designed to answer questions that matter in real merchandising
 
 ---
 
-## Author
+## AUTHOR
 
 Built by **AMRITA SINGH** as a portfolio project demonstrating:
 - End-to-end Streamlit application architecture
@@ -295,6 +295,8 @@ Built by **AMRITA SINGH** as a portfolio project demonstrating:
 - Data engineering (feature creation, synthetic data, KPI modelling)
 - Production-grade error handling and defensive programming
 - Full visual design system with dark/light theming
+
+## CONTACT INFORMATION -:
 
  [Gmail](amriiiita.07@email.com) &nbsp;|&nbsp;  [LinkedIn](www.linkedin.com/in/amriiiita07) 
 &nbsp;|&nbsp;  [GitHub](https://github.com/amriiiita07-ui)
