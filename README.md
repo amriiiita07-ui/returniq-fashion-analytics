@@ -1,4 +1,4 @@
-# 🛍️ ReturnIQ — Fashion E-Commerce Profitability Command Center
+# ReturnIQ — Fashion E-Commerce Profitability Command Center
 
 > **Revenue is vanity. Return-adjusted profit is the truth.**
 
@@ -13,7 +13,7 @@ A full-stack, production-grade analytics dashboard built for Indian fashion e-co
 
 ---
 
-## 📸 Dashboard Preview
+## Dashboard Preview
 
 | Command Center | Profitability Flip | Inventory Risk |
 |---|---|---|
@@ -21,7 +21,7 @@ A full-stack, production-grade analytics dashboard built for Indian fashion e-co
 
 ---
 
-## 🎯 Why This Project Exists
+## Why This Project Exists
 
 India's fashion e-commerce sector has **return rates of 25–40%**, often higher than any other category. Most analytics tools stop at gross revenue — a number that is completely misleading when a third of orders come back. This project answers a deceptively simple question:
 
@@ -43,7 +43,7 @@ The result: a dashboard that flips the traditional analytics story on its head �
 
 ---
 
-## 🏗️ Architecture & Project Structure
+## Architecture & Project Structure
 
 ```
 returniq-fashion-analytics/
@@ -77,9 +77,9 @@ returniq-fashion-analytics/
 
 ---
 
-## 📊 Dashboard Tabs — Full Feature Breakdown
+## Dashboard Tabs — Full Feature Breakdown
 
-### 1. 🖥️ Command Center
+### 1. Command Center
 **The executive summary.** Monthly return-adjusted profit trend lines broken by category, alongside a profit-share donut. Answers: *Is the business improving month-over-month in real terms?*
 
 - Spline smoothed multi-series line chart
@@ -88,7 +88,7 @@ returniq-fashion-analytics/
 
 ---
 
-### 2. 🔄 Profitability Flip
+### 2. Profitability Flip
 **The signature insight of this dashboard.** Shows the top 15 SKUs ranked by gross revenue — then overlays their return-adjusted profit. SKUs that rank #1 in revenue but #12 in profit are the "bestseller flip" signal.
 
 - Horizontal grouped bar chart (revenue vs real profit)
@@ -98,7 +98,7 @@ returniq-fashion-analytics/
 
 ---
 
-### 3. 🔬 Returns Lab
+### 3. Returns Lab
 **Operational root cause analysis.** Breaks down return leakage by return reason (size issue, quality complaint, wrong item, changed mind, etc.) into refund cost and reverse logistics cost.
 
 - Stacked horizontal bar chart
@@ -107,7 +107,7 @@ returniq-fashion-analytics/
 
 ---
 
-### 4. 📐 Size Intelligence
+### 4. Size Intelligence
 **Sizing as a data problem.** In fashion, sizing is the #1 return driver. This tab turns size data into a heatmap — return rate by category × size combination.
 
 - Heatmap with diverging color scale (green → amber → red)
@@ -117,7 +117,7 @@ returniq-fashion-analytics/
 
 ---
 
-### 5. 🇮🇳 India City Tiers
+### 5. India City Tiers
 **India-specific market intelligence.** The Indian e-commerce market segments into Tier 1 (metros), Tier 2 (mid-cities), and Tier 3 (smaller towns) — each with different customer behavior, logistics costs, and return patterns.
 
 - Bubble scatter: return rate vs profit per tier
@@ -126,7 +126,7 @@ returniq-fashion-analytics/
 
 ---
 
-### 6. 📦 Inventory Risk
+### 6. Inventory Risk
 **Where stock pressure meets return risk.** Surfaces SKUs that simultaneously face stockout risk (selling fast) AND markdown risk (not selling fast enough) AND high return rates — the triple-threat inventory problem.
 
 - Bubble chart: stockout risk (x) × markdown risk (y) × return rate (color) × risk score (size)
@@ -135,7 +135,7 @@ returniq-fashion-analytics/
 
 ---
 
-### 7. 👥 Customer Cohorts
+### 7. Customer Cohorts
 **Acquisition quality over time.** Groups customers by their first purchase month and tracks repeat rate, average profit, and returner rate — answering: *Are we acquiring better or worse customers over time?*
 
 - Dual-axis chart: bar (avg profit) + dotted line (repeat rate)
@@ -144,7 +144,7 @@ returniq-fashion-analytics/
 
 ---
 
-### 8. 📡 Channel Mix
+### 8. Channel Mix
 **Which channel actually makes money?** Compares gross revenue vs return-adjusted profit across sales channels (app, website, marketplace, social commerce). High-volume channels often have the worst profit-per-order.
 
 - Grouped bar chart with ₹ labels
@@ -153,7 +153,7 @@ returniq-fashion-analytics/
 
 ---
 
-### 9. 🧪 Data Lab
+### 9. Data Lab
 **Interview-ready.** Exposes the full dataset schema with dtypes and example values. Ships with a SQL query pack covering the core analytical questions this dashboard answers.
 
 - Live schema explorer
@@ -162,7 +162,7 @@ returniq-fashion-analytics/
 
 ---
 
-## ⚙️ KPIs Computed
+## KPIs Computed
 
 | Metric | Formula |
 |---|---|
@@ -177,7 +177,7 @@ returniq-fashion-analytics/
 
 ---
 
-## 🎨 Design System
+## Design System
 
 ReturnIQ ships with a full dual-theme design system:
 
@@ -200,7 +200,7 @@ accent6  = "#00D4B1"   # Green — profit / safe
 
 ---
 
-## 🧠 Key Engineering Decisions
+## Key Engineering Decisions
 
 ### Synthetic Data Generator
 The data generator (`src/data_generator.py`) produces a realistic 10,000+ order dataset with:
@@ -228,7 +228,7 @@ Plotly colorscales use named built-ins (`"RdYlGn_r"`) rather than custom hex+alp
 
 ---
 
-## 🚀 Running Locally
+## Running Locally
 
 ```bash
 # 1. Clone the repo
@@ -246,7 +246,7 @@ Sample data is auto-generated on first run — no external data source needed.
 
 ---
 
-## 📋 Requirements
+## Requirements
 
 ```
 streamlit>=1.32.0
@@ -257,7 +257,7 @@ numpy>=1.26.0
 
 ---
 
-## 🧩 SQL Query Pack (Included)
+## SQL Query Pack (Included)
 
 The `/sql/analysis_queries.sql` file ships with analyst-ready queries covering:
 
@@ -272,7 +272,7 @@ The `/sql/analysis_queries.sql` file ships with analyst-ready queries covering:
 
 ---
 
-## 💡 Business Impact Framing
+## Business Impact Framing
 
 This dashboard is designed to answer questions that matter in real merchandising and e-commerce roles:
 
@@ -287,7 +287,7 @@ This dashboard is designed to answer questions that matter in real merchandising
 
 ---
 
-## 👤 Author
+## Author
 
 Built by **AMRITA SINGH** as a portfolio project demonstrating:
 - End-to-end Streamlit application architecture
@@ -296,7 +296,7 @@ Built by **AMRITA SINGH** as a portfolio project demonstrating:
 - Production-grade error handling and defensive programming
 - Full visual design system with dark/light theming
 
-📧 amriiiita.07@email.com &nbsp;|&nbsp; 🔗 [LinkedIn] (www.linkedin.com/in/amriiiita07) 
-&nbsp;|&nbsp; 🐙 [GitHub] (https://github.com/amriiiita07-ui)
+ amriiiita.07@email.com &nbsp;|&nbsp;  [LinkedIn] (www.linkedin.com/in/amriiiita07) 
+&nbsp;|&nbsp;  [GitHub] (https://github.com/amriiiita07-ui)
 
 
