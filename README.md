@@ -1,4 +1,6 @@
-# ReturnIQ — Fashion E-Commerce Profitability Command Center
+<div align="center">     
+# ReturnIQ 
+### Fashion E-Commerce Profitability Command Center
 
 > **Revenue is vanity. Return-adjusted profit is the truth.**
 
@@ -10,6 +12,8 @@ A full-stack, production-grade analytics dashboard built for Indian fashion e-co
 ![Pandas](https://img.shields.io/badge/Pandas-2.x-lightblue?logo=pandas)
 ![Plotly](https://img.shields.io/badge/Plotly-5.x-3F4F75?logo=plotly)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.x-FF4B4B?logo=streamlit)
+
+</div>
 
 ---
 
