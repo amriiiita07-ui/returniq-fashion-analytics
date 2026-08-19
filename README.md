@@ -1,6 +1,7 @@
 <div align="center">  
             
 # ReturnIQ 
+
 ### Fashion E-Commerce Profitability Command Center
 
 > **Revenue is vanity. Return-adjusted profit is the truth.**
